@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Leaf, Heart, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useReflectionHistory } from "@/hooks/use-reflection-history";
 import ResultCard from "@/components/ResultCard";
 import HadithCard from "@/components/HadithCard";
 import LoadingAnimation from "@/components/LoadingAnimation";
+import HistoryDrawer from "@/components/HistoryDrawer";
 
 interface GuidanceResult {
   ayat: string;
@@ -22,6 +24,7 @@ const Index = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GuidanceResult | null>(null);
+  const { history, addEntry, clearHistory } = useReflectionHistory();
 
   const handleSubmit = async () => {
     if (!query.trim()) return;
@@ -36,7 +39,18 @@ const Index = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      setResult(data as GuidanceResult);
+      const guidanceResult = data as GuidanceResult;
+      setResult(guidanceResult);
+      addEntry({
+        query,
+        ayat: guidanceResult.ayat,
+        ayatReference: guidanceResult.ayatReference,
+        bengaliTranslation: guidanceResult.bengaliTranslation,
+        reflection: guidanceResult.reflection,
+        hadithBengali: guidanceResult.hadithBengali,
+        hadithNarrator: guidanceResult.hadithNarrator,
+        hadithSource: guidanceResult.hadithSource,
+      });
     } catch (e: any) {
       console.error("Guidance error:", e);
       toast({
@@ -49,6 +63,20 @@ const Index = () => {
     }
   };
 
+  const handleHistorySelect = (entry: any) => {
+    setResult({
+      ayat: entry.ayat,
+      ayatReference: entry.ayatReference,
+      bengaliTranslation: entry.bengaliTranslation,
+      reflection: entry.reflection,
+      hadith: "",
+      hadithBengali: entry.hadithBengali,
+      hadithNarrator: entry.hadithNarrator,
+      hadithSource: entry.hadithSource,
+    });
+    setQuery(entry.query);
+  };
+
   const handleReset = () => {
     setResult(null);
     setQuery("");
@@ -56,18 +84,23 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="pt-8 pb-4 text-center">
+      <header className="pt-8 pb-4 px-4 flex items-center justify-between max-w-xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="flex items-center justify-center gap-2"
+          className="flex items-center gap-2"
         >
           <Leaf className="text-primary" size={22} />
           <h1 className="text-xl font-light tracking-widest text-primary uppercase">
             Sakinah AI
           </h1>
         </motion.div>
+        <HistoryDrawer
+          history={history}
+          onSelect={handleHistorySelect}
+          onClear={clearHistory}
+        />
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 pb-16">
@@ -133,6 +166,9 @@ const Index = () => {
                   reference={result.ayatReference}
                   bengaliTranslation={result.bengaliTranslation}
                   reflection={result.reflection}
+                  hadithText={result.hadithBengali}
+                  hadithSource={result.hadithSource}
+                  hadithNarrator={result.hadithNarrator}
                   onReset={handleReset}
                 />
                 <HadithCard

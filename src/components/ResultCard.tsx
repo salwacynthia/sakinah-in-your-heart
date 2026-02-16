@@ -1,11 +1,15 @@
 import { motion } from "framer-motion";
-import { BookOpen, RotateCcw } from "lucide-react";
+import { BookOpen, RotateCcw, Share2, Check } from "lucide-react";
+import { useState } from "react";
 
 interface ResultCardProps {
   ayat: string;
   reference: string;
   bengaliTranslation: string;
   reflection: string;
+  hadithText?: string;
+  hadithSource?: string;
+  hadithNarrator?: string;
   onReset: () => void;
 }
 
@@ -14,8 +18,36 @@ const ResultCard = ({
   reference,
   bengaliTranslation,
   reflection,
+  hadithText,
+  hadithSource,
+  hadithNarrator,
   onReset,
 }: ResultCardProps) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const lines = [
+      `📖 ${reference}`,
+      `"${ayat}"`,
+      "",
+      `🇧🇩 ${bengaliTranslation}`,
+      "",
+      `✦ ${reflection}`,
+    ];
+    if (hadithText) {
+      lines.push("", `🕌 Hadith (${hadithSource || "Sahih"})`, hadithText, `— ${hadithNarrator || ""}`);
+    }
+    lines.push("", "— Sakinah AI");
+
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback
+    }
+  };
+
   return (
     <div className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
       {/* Arabic Ayat */}
@@ -65,19 +97,27 @@ const ResultCard = ({
         </p>
       </motion.div>
 
-      {/* Reset */}
+      {/* Actions */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.1 }}
-        className="text-center"
+        className="flex items-center justify-center gap-4"
       >
         <button
           onClick={onReset}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto"
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
         >
           <RotateCcw size={12} />
           Ask again
+        </button>
+        <span className="text-border">·</span>
+        <button
+          onClick={handleShare}
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+        >
+          {copied ? <Check size={12} className="text-primary" /> : <Share2 size={12} />}
+          {copied ? "Copied!" : "Share"}
         </button>
       </motion.div>
     </div>

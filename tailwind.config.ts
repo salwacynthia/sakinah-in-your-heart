@@ -54,6 +54,10 @@ export default {
         ayat: "hsl(var(--ayat))",
         reflection: "hsl(var(--reflection))",
         glow: "hsl(var(--glow))",
+        sand: {
+          DEFAULT: "hsl(var(--sand))",
+          foreground: "hsl(var(--sand-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

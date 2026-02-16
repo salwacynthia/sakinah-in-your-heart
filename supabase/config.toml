@@ -1,0 +1,4 @@
+project_id = "petyarrzddqeyrxbowkq"
+
+[functions.sakinah-guidance]
+verify_jwt = false

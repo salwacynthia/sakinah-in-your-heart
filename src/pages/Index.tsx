@@ -1,49 +1,52 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Leaf, Heart, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import ResultCard from "@/components/ResultCard";
+import HadithCard from "@/components/HadithCard";
 import LoadingAnimation from "@/components/LoadingAnimation";
 
-const MOCK_RESULTS = [
-  {
-    ayat: "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
-    reference: "সূরা আর-রা'দ (১৩:২৮)",
-    bengaliTranslation:
-      "জেনে রাখো, আল্লাহর স্মরণেই অন্তরসমূহ প্রশান্তি লাভ করে।",
-    reflection:
-      "Hey, I know that heavy feeling — when your chest is tight and nothing seems to help. But here's the beautiful thing: this verse is like a warm hug from Allah. He's saying, 'Just come back to Me. Talk to Me. Remember Me.' You don't need to have it all figured out. Just sit with His name for a moment, and let your heart breathe.",
-  },
-  {
-    ayat: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
-    reference: "সূরা আশ-শারহ (৯৪:৫)",
-    bengaliTranslation: "নিশ্চয়ই কষ্টের সাথে স্বস্তি আছে।",
-    reflection:
-      "I want you to really hear this — Allah didn't say ease comes after the hard times. He said it's right there with it. Like, right now, even in the middle of everything you're going through, something good is already unfolding. You might not see it yet, and that's okay. But it's there. Hold on a little longer, friend.",
-  },
-  {
-    ayat: "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
-    reference: "সূরা আল-হাদীদ (৫৭:৪)",
-    bengaliTranslation: "তিনি তোমাদের সাথে আছেন তোমরা যেখানেই থাকো।",
-    reflection:
-      "You know those nights when it feels like nobody gets it? Like you're carrying something no one else can see? This verse is Allah gently telling you — 'I'm right here. I've always been here.' You don't have to explain yourself to Him. He already knows. And He's not going anywhere.",
-  },
-];
+interface GuidanceResult {
+  ayat: string;
+  ayatReference: string;
+  bengaliTranslation: string;
+  reflection: string;
+  hadith: string;
+  hadithBengali: string;
+  hadithNarrator: string;
+  hadithSource: string;
+}
 
 const Index = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<(typeof MOCK_RESULTS)[0] | null>(null);
+  const [result, setResult] = useState<GuidanceResult | null>(null);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!query.trim()) return;
     setResult(null);
     setLoading(true);
-    setTimeout(() => {
-      const randomResult =
-        MOCK_RESULTS[Math.floor(Math.random() * MOCK_RESULTS.length)];
-      setResult(randomResult);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("sakinah-guidance", {
+        body: { message: query },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setResult(data as GuidanceResult);
+    } catch (e: any) {
+      console.error("Guidance error:", e);
+      toast({
+        title: "Something went wrong",
+        description: e.message || "Could not fetch guidance. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 3000);
+    }
   };
 
   const handleReset = () => {
@@ -53,7 +56,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="pt-8 pb-4 text-center">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -68,7 +70,6 @@ const Index = () => {
         </motion.div>
       </header>
 
-      {/* Main */}
       <main className="flex-1 flex items-center justify-center px-4 pb-16">
         <div className="w-full max-w-xl">
           <AnimatePresence mode="wait">
@@ -86,7 +87,7 @@ const Index = () => {
                   What is on your heart today?
                 </h2>
                 <p className="text-muted-foreground text-sm mb-8">
-                  Share your thoughts, and find peace through the Quran.
+                  Share your thoughts, and find peace through the Quran & Sunnah.
                 </p>
                 <textarea
                   value={query}
@@ -129,10 +130,15 @@ const Index = () => {
               >
                 <ResultCard
                   ayat={result.ayat}
-                  reference={result.reference}
+                  reference={result.ayatReference}
                   bengaliTranslation={result.bengaliTranslation}
                   reflection={result.reflection}
                   onReset={handleReset}
+                />
+                <HadithCard
+                  hadithBengali={result.hadithBengali}
+                  narrator={result.hadithNarrator}
+                  source={result.hadithSource}
                 />
               </motion.div>
             )}
@@ -140,7 +146,6 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="py-4 text-center text-muted-foreground text-xs tracking-wide">
         Seek peace. Trust the journey.
       </footer>

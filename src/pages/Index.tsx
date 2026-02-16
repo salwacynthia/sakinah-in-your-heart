@@ -11,21 +11,21 @@ const MOCK_RESULTS = [
     bengaliTranslation:
       "জেনে রাখো, আল্লাহর স্মরণেই অন্তরসমূহ প্রশান্তি লাভ করে।",
     reflection:
-      "When the heart feels heavy, it seeks something eternal to hold onto. This verse reminds us that true tranquility doesn't come from the world — it comes from remembering the One who created it. Whatever weighs on your heart today, let His remembrance be your refuge.",
+      "Hey, I know that heavy feeling — when your chest is tight and nothing seems to help. But here's the beautiful thing: this verse is like a warm hug from Allah. He's saying, 'Just come back to Me. Talk to Me. Remember Me.' You don't need to have it all figured out. Just sit with His name for a moment, and let your heart breathe.",
   },
   {
     ayat: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
     reference: "সূরা আশ-শারহ (৯৪:৫)",
     bengaliTranslation: "নিশ্চয়ই কষ্টের সাথে স্বস্তি আছে।",
     reflection:
-      "Difficulty is never the end of the story. Allah promises ease alongside hardship — not after, but with it. Even in your darkest moment, light already exists. Trust the process, trust the Creator.",
+      "I want you to really hear this — Allah didn't say ease comes after the hard times. He said it's right there with it. Like, right now, even in the middle of everything you're going through, something good is already unfolding. You might not see it yet, and that's okay. But it's there. Hold on a little longer, friend.",
   },
   {
     ayat: "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
     reference: "সূরা আল-হাদীদ (৫৭:৪)",
     bengaliTranslation: "তিনি তোমাদের সাথে আছেন তোমরা যেখানেই থাকো।",
     reflection:
-      "You are never alone. Whether in a crowded room or in the silence of the night, Allah's presence surrounds you. This verse is a gentle embrace for the lonely heart — He sees you, He hears you, He is near.",
+      "You know those nights when it feels like nobody gets it? Like you're carrying something no one else can see? This verse is Allah gently telling you — 'I'm right here. I've always been here.' You don't have to explain yourself to Him. He already knows. And He's not going anywhere.",
   },
 ];
 

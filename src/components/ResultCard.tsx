@@ -28,7 +28,11 @@ const ResultCard = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const extractAyahKey = (ref: string): string | null => {
-    const match = ref.match(/(\d+)\s*[:\s।]\s*(\d+)/);
+    // Convert Bengali numerals to ASCII
+    const toBengali = (s: string) =>
+      s.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)));
+    const ascii = toBengali(ref);
+    const match = ascii.match(/(\d+)\s*[:\s।]\s*(\d+)/);
     if (match) return `${match[1]}:${match[2]}`;
     return null;
   };

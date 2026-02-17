@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { BookOpen, RotateCcw, Share2, Check } from "lucide-react";
-import { useState } from "react";
+import { BookOpen, RotateCcw, Share2, Check, Play, Pause, Loader2 } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
 
 interface ResultCardProps {
   ayat: string;
@@ -24,6 +24,47 @@ const ResultCard = ({
   onReset,
 }: ResultCardProps) => {
   const [copied, setCopied] = useState(false);
+  const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const extractAyahKey = (ref: string): string | null => {
+    const match = ref.match(/(\d+)\s*[:\s।]\s*(\d+)/);
+    if (match) return `${match[1]}:${match[2]}`;
+    return null;
+  };
+
+  const handlePlayAudio = useCallback(async () => {
+    if (audioState === "playing") {
+      audioRef.current?.pause();
+      setAudioState("idle");
+      return;
+    }
+
+    const ayahKey = extractAyahKey(reference);
+    if (!ayahKey) return;
+
+    setAudioState("loading");
+    try {
+      const res = await fetch(`https://api.quran.com/api/v4/recitations/7/by_ayah/${ayahKey}`);
+      const data = await res.json();
+      const url = data?.audio_files?.[0]?.url;
+      if (!url) throw new Error("No audio");
+
+      const fullUrl = url.startsWith("http") ? url : `https://verses.quran.com/${url}`;
+      
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      const audio = new Audio(fullUrl);
+      audioRef.current = audio;
+      audio.onended = () => setAudioState("idle");
+      audio.onerror = () => setAudioState("idle");
+      await audio.play();
+      setAudioState("playing");
+    } catch {
+      setAudioState("idle");
+    }
+  }, [audioState, reference]);
 
   const handleShare = async () => {
     const lines = [
@@ -60,7 +101,22 @@ const ResultCard = ({
         <p className="font-amiri text-2xl sm:text-3xl leading-loose text-ayat" dir="rtl">
           {ayat}
         </p>
-        <p className="text-xs text-muted-foreground mt-2">{reference}</p>
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <p className="text-xs text-muted-foreground">{reference}</p>
+          <button
+            onClick={handlePlayAudio}
+            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+            aria-label={audioState === "playing" ? "Pause recitation" : "Play recitation"}
+          >
+            {audioState === "loading" ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : audioState === "playing" ? (
+              <Pause size={14} />
+            ) : (
+              <Play size={14} className="ml-0.5" />
+            )}
+          </button>
+        </div>
       </motion.div>
 
       {/* Divider */}

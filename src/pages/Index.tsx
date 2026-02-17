@@ -139,7 +139,7 @@ const Index = () => {
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSubmit}
                 disabled={!query.trim()}
-                className="mt-6 px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm tracking-wide disabled:cursor-not-allowed flex items-center gap-2 mx-auto transition-colors hover:bg-accent shadow-none opacity-90">
+                className="mt-6 px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm tracking-wide disabled:cursor-not-allowed gap-2 mx-auto transition-colors hover:bg-accent shadow-none opacity-90 flex items-center justify-start">
 
                   <Sparkles size={16} />
                   Find Peace

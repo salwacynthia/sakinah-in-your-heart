@@ -3,6 +3,9 @@ import { BookOpen, RotateCcw, Share2, Check, Play, Pause, Loader2 } from "lucide
 import { useState, useRef, useCallback } from "react";
 
 interface ResultCardProps {
+  asmaulHusnaArabic?: string;
+  asmaulHusnaBengali?: string;
+  asmaulHusnaExplanation?: string;
   ayat: string;
   reference: string;
   bengaliTranslation: string;
@@ -14,6 +17,9 @@ interface ResultCardProps {
 }
 
 const ResultCard = ({
+  asmaulHusnaArabic,
+  asmaulHusnaBengali,
+  asmaulHusnaExplanation,
   ayat,
   reference,
   bengaliTranslation,
@@ -95,6 +101,29 @@ const ResultCard = ({
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
+      {/* Healing Name of Allah */}
+      {asmaulHusnaArabic && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8 bg-primary/5 border border-primary/15 rounded-lg p-5"
+        >
+          <p className="text-xs uppercase tracking-widest text-primary mb-3 flex items-center justify-center gap-1.5">
+            ✦ Healing Name of Allah
+          </p>
+          <p className="font-amiri text-3xl sm:text-4xl text-primary mb-2" dir="rtl">
+            {asmaulHusnaArabic}
+          </p>
+          <p className="text-sm font-medium text-foreground mb-1">
+            {asmaulHusnaBengali}
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed italic">
+            {asmaulHusnaExplanation}
+          </p>
+        </motion.div>
+      )}
+
       {/* Arabic Ayat */}
       <motion.div
         initial={{ opacity: 0 }}

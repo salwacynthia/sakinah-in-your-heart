@@ -10,6 +10,9 @@ import LoadingAnimation from "@/components/LoadingAnimation";
 import HistoryDrawer from "@/components/HistoryDrawer";
 
 interface GuidanceResult {
+  asmaulHusnaArabic: string;
+  asmaulHusnaBengali: string;
+  asmaulHusnaExplanation: string;
   ayat: string;
   ayatReference: string;
   bengaliTranslation: string;
@@ -65,6 +68,9 @@ const Index = () => {
 
   const handleHistorySelect = (entry: any) => {
     setResult({
+      asmaulHusnaArabic: entry.asmaulHusnaArabic || "",
+      asmaulHusnaBengali: entry.asmaulHusnaBengali || "",
+      asmaulHusnaExplanation: entry.asmaulHusnaExplanation || "",
       ayat: entry.ayat,
       ayatReference: entry.ayatReference,
       bengaliTranslation: entry.bengaliTranslation,
@@ -162,6 +168,9 @@ const Index = () => {
                 transition={{ duration: 0.6 }}
               >
                 <ResultCard
+                  asmaulHusnaArabic={result.asmaulHusnaArabic}
+                  asmaulHusnaBengali={result.asmaulHusnaBengali}
+                  asmaulHusnaExplanation={result.asmaulHusnaExplanation}
                   ayat={result.ayat}
                   reference={result.ayatReference}
                   bengaliTranslation={result.bengaliTranslation}

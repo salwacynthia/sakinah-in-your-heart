@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { BookOpen, RotateCcw, Share2, Check, Play, Pause, Loader2 } from "lucide-react";
+import { BookOpen, Play, Pause, Loader2 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 
 interface ResultCardProps {
@@ -10,9 +10,6 @@ interface ResultCardProps {
   reference: string;
   bengaliTranslation: string;
   reflection: string;
-  hadithText?: string;
-  hadithSource?: string;
-  hadithNarrator?: string;
   onReset: () => void;
 }
 
@@ -24,17 +21,12 @@ const ResultCard = ({
   reference,
   bengaliTranslation,
   reflection,
-  hadithText,
-  hadithSource,
-  hadithNarrator,
   onReset,
 }: ResultCardProps) => {
-  const [copied, setCopied] = useState(false);
   const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const extractAyahKey = (ref: string): string | null => {
-    // Convert Bengali numerals to ASCII
     const toBengali = (s: string) =>
       s.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)));
     const ascii = toBengali(ref);
@@ -76,54 +68,8 @@ const ResultCard = ({
     }
   }, [audioState, reference]);
 
-  const handleShare = async () => {
-    const lines = [
-      `📖 ${reference}`,
-      `"${ayat}"`,
-      "",
-      `🇧🇩 ${bengaliTranslation}`,
-      "",
-      `✦ ${reflection}`,
-    ];
-    if (hadithText) {
-      lines.push("", `🕌 Hadith (${hadithSource || "Sahih"})`, hadithText, `— ${hadithNarrator || ""}`);
-    }
-    lines.push("", "— Sakinah AI");
-
-    try {
-      await navigator.clipboard.writeText(lines.join("\n"));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // fallback
-    }
-  };
-
   return (
     <div className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
-      {/* Healing Name of Allah */}
-      {asmaulHusnaArabic && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-8 bg-primary/5 border border-primary/15 rounded-lg p-5"
-        >
-          <p className="text-xs uppercase tracking-widest text-primary mb-3 flex items-center justify-center gap-1.5">
-            ✦ Healing Name of Allah
-          </p>
-          <p className="font-amiri text-3xl sm:text-4xl text-primary mb-2" dir="rtl">
-            {asmaulHusnaArabic}
-          </p>
-          <p className="text-sm font-medium text-foreground mb-1">
-            {asmaulHusnaBengali}
-          </p>
-          <p className="text-xs text-muted-foreground leading-relaxed italic">
-            {asmaulHusnaExplanation}
-          </p>
-        </motion.div>
-      )}
-
       {/* Arabic Ayat */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -176,7 +122,7 @@ const ResultCard = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.6 }}
-        className="mb-8"
+        className="mb-6"
       >
         <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
           ✦ Reflection
@@ -186,29 +132,28 @@ const ResultCard = ({
         </p>
       </motion.div>
 
-      {/* Actions */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.1 }}
-        className="flex items-center justify-center gap-4"
-      >
-        <button
-          onClick={onReset}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+      {/* Healing Name of Allah */}
+      {asmaulHusnaArabic && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.0, duration: 0.6 }}
+          className="text-center bg-primary/5 border border-primary/15 rounded-lg p-5"
         >
-          <RotateCcw size={12} />
-          Ask again
-        </button>
-        <span className="text-border">·</span>
-        <button
-          onClick={handleShare}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-        >
-          {copied ? <Check size={12} className="text-primary" /> : <Share2 size={12} />}
-          {copied ? "Copied!" : "Share"}
-        </button>
-      </motion.div>
+          <p className="text-xs uppercase tracking-widest text-primary mb-3 flex items-center justify-center gap-1.5">
+            ✦ Healing Name of Allah
+          </p>
+          <p className="font-amiri text-3xl sm:text-4xl text-primary mb-2" dir="rtl">
+            {asmaulHusnaArabic}
+          </p>
+          <p className="text-sm font-medium text-foreground mb-1">
+            {asmaulHusnaBengali}
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed italic">
+            {asmaulHusnaExplanation}
+          </p>
+        </motion.div>
+      )}
     </div>
   );
 };

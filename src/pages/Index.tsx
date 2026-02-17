@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Heart, Sparkles } from "lucide-react";
+import { Leaf, Heart, Sparkles, RotateCcw, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useReflectionHistory } from "@/hooks/use-reflection-history";
@@ -175,9 +175,6 @@ const Index = () => {
                   reference={result.ayatReference}
                   bengaliTranslation={result.bengaliTranslation}
                   reflection={result.reflection}
-                  hadithText={result.hadithBengali}
-                  hadithSource={result.hadithSource}
-                  hadithNarrator={result.hadithNarrator}
                   onReset={handleReset}
                 />
                 <HadithCard
@@ -185,6 +182,45 @@ const Index = () => {
                   narrator={result.hadithNarrator}
                   source={result.hadithSource}
                 />
+                {/* Actions after Hadith */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.5 }}
+                  className="flex items-center justify-center gap-4 mt-6"
+                >
+                  <button
+                    onClick={handleReset}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <RotateCcw size={12} />
+                    Ask again
+                  </button>
+                  <span className="text-border">·</span>
+                  <button
+                    onClick={async () => {
+                      const lines = [
+                        `📖 ${result.ayatReference}`,
+                        `"${result.ayat}"`,
+                        "",
+                        `🇧🇩 ${result.bengaliTranslation}`,
+                        "",
+                        `✦ ${result.reflection}`,
+                      ];
+                      if (result.hadithBengali) {
+                        lines.push("", `🕌 Hadith (${result.hadithSource || "Sahih"})`, result.hadithBengali, `— ${result.hadithNarrator || ""}`);
+                      }
+                      lines.push("", "— Sakinah AI");
+                      try {
+                        await navigator.clipboard.writeText(lines.join("\n"));
+                      } catch {}
+                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <Share2 size={12} />
+                    Share
+                  </button>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>

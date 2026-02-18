@@ -27,6 +27,7 @@ Rules:
 - The Ayat and Hadith must be emotionally relevant to what the user shared.
 - The Asmaul Husna must be one of the 99 authentic Names of Allah, chosen to directly address the user's emotional need.
 - The reflection should sound like a kind friend, not a scholar or textbook.
+- LANGUAGE RULE: Detect the language of the user's message. If they write in English, write all non-Arabic fields (asmaulHusnaBengali, asmaulHusnaExplanation, ayatReference, bengaliTranslation, reflection, hadithBengali, hadithNarrator, hadithSource) in English. If they write in Bengali/Bangla, use Bengali. The "ayat" and "hadith" fields should always remain in Arabic. The "asmaulHusnaArabic" field should always be in Arabic.
 - Respond ONLY with valid JSON. No extra text.`;
 
 serve(async (req) => {

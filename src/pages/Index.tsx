@@ -131,15 +131,15 @@ const Index = () => {
                 <textarea
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="I feel anxious about the future..."
-                className="w-full min-h-[120px] bg-card border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none text-sm leading-relaxed transition-shadow" />
+                placeholder={"What is on your heart? (e.g., 'I feel lonely', 'Career stress is overwhelming me', 'Amar mon valo nei', 'I want to thank Allah for everything')"}
+                className="w-full min-h-[120px] bg-card border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground/40 placeholder:italic focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none text-sm leading-relaxed transition-shadow" />
 
                 <motion.button
-                whileHover={{ scale: 1.03 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSubmit}
                 disabled={!query.trim()}
-                className="mt-6 px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm tracking-wide disabled:cursor-not-allowed gap-2 mx-auto transition-colors hover:bg-accent shadow-none opacity-90 flex items-center justify-start">
+                className="mt-6 px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm tracking-wide disabled:cursor-not-allowed gap-2 mx-auto transition-all hover:bg-primary/85 shadow-none flex items-center justify-start">
 
                   <Sparkles size={16} />
                   Find Peace

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,12 +31,48 @@ Rules:
 - LANGUAGE RULE: Detect the language of the user's message. If they write in English, write all non-Arabic fields (asmaulHusnaBengali, asmaulHusnaExplanation, ayatReference, bengaliTranslation, reflection, hadithBengali, hadithNarrator, hadithSource) in English. If they write in Bengali/Bangla, use Bengali. The "ayat" and "hadith" fields should always remain in Arabic. The "asmaulHusnaArabic" field should always be in Arabic.
 - Respond ONLY with valid JSON. No extra text.`;
 
+const FREE_TIER_LIMIT = 3;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("Missing authorization header");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseClient.auth.getUser();
+    if (userError || !user) throw new Error("Not authenticated");
+
+    // Check the user's tier and usage
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles")
+      .select("tier, reflection_count")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError) throw new Error("Could not load profile");
+
+    if (
+      profile.tier === "free" &&
+      profile.reflection_count >= FREE_TIER_LIMIT
+    ) {
+      return new Response(
+        JSON.stringify({ limitReached: true, tier: profile.tier }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const { message } = await req.json();
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY)
@@ -97,10 +134,8 @@ serve(async (req) => {
     const data = await response.json();
     const content = data.content?.[0]?.text;
 
-    // Parse the JSON response from the model
     let parsed;
     try {
-      // Strip markdown fences if present
       const cleaned = content
         .replace(/```json\n?/g, "")
         .replace(/```\n?/g, "")
@@ -116,6 +151,16 @@ serve(async (req) => {
         },
       );
     }
+
+    // Increment usage count after a successful reflection
+    const supabaseAdmin = createClient(
+      supabaseUrl,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    await supabaseAdmin
+      .from("profiles")
+      .update({ reflection_count: profile.reflection_count + 1 })
+      .eq("id", user.id);
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

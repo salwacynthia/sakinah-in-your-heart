@@ -31,7 +31,7 @@ Rules:
 - LANGUAGE RULE: Detect the language of the user's message. If they write in English, write all non-Arabic fields (asmaulHusnaBengali, asmaulHusnaExplanation, ayatReference, bengaliTranslation, reflection, hadithBengali, hadithNarrator, hadithSource) in English. If they write in Bengali/Bangla, use Bengali. The "ayat" and "hadith" fields should always remain in Arabic. The "asmaulHusnaArabic" field should always be in Arabic.
 - Respond ONLY with valid JSON. No extra text.`;
 
-const FREE_TIER_LIMIT = 3;
+const FREE_TIER_DAILY_LIMIT = 3;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -54,19 +54,20 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser();
     if (userError || !user) throw new Error("Not authenticated");
 
-    // Check the user's tier and usage
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
-      .select("tier, reflection_count")
+      .select("tier, reflection_count, last_reset_date")
       .eq("id", user.id)
       .single();
 
     if (profileError) throw new Error("Could not load profile");
 
-    if (
-      profile.tier === "free" &&
-      profile.reflection_count >= FREE_TIER_LIMIT
-    ) {
+    // Reset the count if it's a new day (UTC)
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const isNewDay = profile.last_reset_date !== todayStr;
+    const effectiveCount = isNewDay ? 0 : profile.reflection_count;
+
+    if (profile.tier === "free" && effectiveCount >= FREE_TIER_DAILY_LIMIT) {
       return new Response(
         JSON.stringify({ limitReached: true, tier: profile.tier }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -152,14 +153,17 @@ serve(async (req) => {
       );
     }
 
-    // Increment usage count after a successful reflection
+    // Increment usage count, resetting first if it's a new day
     const supabaseAdmin = createClient(
       supabaseUrl,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
     await supabaseAdmin
       .from("profiles")
-      .update({ reflection_count: profile.reflection_count + 1 })
+      .update({
+        reflection_count: effectiveCount + 1,
+        last_reset_date: todayStr,
+      })
       .eq("id", user.id);
 
     return new Response(JSON.stringify(parsed), {

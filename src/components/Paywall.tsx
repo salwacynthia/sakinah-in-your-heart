@@ -8,13 +8,8 @@ interface PaywallProps {
 const tiers = [
   {
     name: "Sakinah+",
-    price: "$4.99/mo",
-    features: [
-      "Unlimited reflections",
-      "Multiple translations + tafsir context",
-      "Offline access",
-      "No ads, ever",
-    ],
+    price: "$1.99/mo",
+    features: ["Unlimited reflections", "No ads, ever"],
     highlight: true,
   },
   {
@@ -39,10 +34,10 @@ const Paywall = ({ onClose }: PaywallProps) => {
     >
       <Sparkles className="mx-auto mb-4 text-primary" size={28} />
       <h2 className="text-xl sm:text-2xl font-light text-foreground mb-2">
-        You've used your 3 free reflections
+        You've used today's 3 free reflections
       </h2>
       <p className="text-muted-foreground text-sm mb-8">
-        Continue your journey with unlimited guidance.
+        Come back tomorrow, or continue now with unlimited guidance.
       </p>
 
       <div className="grid sm:grid-cols-2 gap-4 mb-6">

@@ -154,17 +154,23 @@ serve(async (req) => {
     }
 
     // Increment usage count, resetting first if it's a new day
-    const supabaseAdmin = createClient(
-      supabaseUrl,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
-    await supabaseAdmin
-      .from("profiles")
-      .update({
-        reflection_count: effectiveCount + 1,
-        last_reset_date: todayStr,
-      })
-      .eq("id", user.id);
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!serviceRoleKey) {
+      console.error("SUPABASE_SERVICE_ROLE_KEY is not configured");
+    } else {
+      const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+      const { error: updateError } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          reflection_count: effectiveCount + 1,
+          last_reset_date: todayStr,
+        })
+        .eq("id", user.id);
+
+      if (updateError) {
+        console.error("Failed to update reflection_count:", updateError);
+      }
+    }
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

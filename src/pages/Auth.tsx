@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Leaf, Mail, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -96,6 +96,14 @@ const Auth = () => {
               className="w-full bg-card border border-border rounded-lg py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
+
+          {mode === "signin" && (
+            <div className="text-right -mt-2">
+              <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+          )}
 
           <motion.button
             whileHover={{ scale: 1.02 }}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Heart, Sparkles, RotateCcw, Share2 } from "lucide-react";
+import { Leaf, Heart, Sparkles, RotateCcw, Share2, User as UserIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useReflectionHistory } from "@/hooks/use-reflection-history";
@@ -116,11 +117,16 @@ const Index = () => {
             SAKINAH
           </h1>
         </motion.div>
-        <HistoryDrawer
-          history={history}
-          onSelect={handleHistorySelect}
-          onClear={clearHistory}
-        />
+        <div className="flex items-center gap-1">
+          <HistoryDrawer
+            history={history}
+            onSelect={handleHistorySelect}
+            onClear={clearHistory}
+          />
+          <Link to="/account" aria-label="Account" className="p-2 rounded-full text-primary hover:bg-muted transition-colors">
+            <UserIcon size={20} />
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 pb-16">

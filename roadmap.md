@@ -16,6 +16,7 @@ A running list of what's done and what's next. Updated as we build.
 - [x] Reflection history — last 50 entries saved, HistoryDrawer to revisit, clear-all
 - [x] Language detection — write in English → get English response; Bengali → Bengali
 - [x] AI backend — edge function `sakinah-guidance` returning all sections in one call
+- [x] Forgot password + reset page, Account page (change password/email, sign out)
 - [x] Sign-in screens + 3 free reflections daily limit + paywall ($1.99 / $7.99)
 - [x] Android & iOS app setup (Capacitor)
 

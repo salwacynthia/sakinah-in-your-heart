@@ -7,6 +7,9 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +40,9 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route
               path="/"
               element={

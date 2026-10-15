@@ -31,7 +31,7 @@ Rules:
 - LANGUAGE RULE: Detect the language of the user's message. If they write in English, write all non-Arabic fields (asmaulHusnaBengali, asmaulHusnaExplanation, ayatReference, bengaliTranslation, reflection, hadithBengali, hadithNarrator, hadithSource) in English. If they write in Bengali/Bangla, use Bengali. The "ayat" and "hadith" fields should always remain in Arabic. The "asmaulHusnaArabic" field should always be in Arabic.
 - Respond ONLY with valid JSON. No extra text.`;
 
-const FREE_TIER_DAILY_LIMIT = 3;
+import { computeQuota } from "./quota.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -63,18 +63,38 @@ serve(async (req) => {
     if (profileError) throw new Error("Could not load profile");
 
     // Reset the count if it's a new day (UTC)
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const isNewDay = profile.last_reset_date !== todayStr;
-    const effectiveCount = isNewDay ? 0 : profile.reflection_count;
+    const quota = computeQuota(profile);
+    const { todayStr, used: effectiveCount } = quota;
+    const quotaInfo = (usedNow: number) => {
+      const q = computeQuota(
+        { ...profile, reflection_count: usedNow, last_reset_date: todayStr },
+      );
+      return { remaining: q.remaining, limit: q.limit, unlimited: q.unlimited };
+    };
 
-    if (profile.tier === "free" && effectiveCount >= FREE_TIER_DAILY_LIMIT) {
+    const body = await req.json().catch(() => ({}));
+
+    // Status-only request: report today's remaining count, no AI call
+    if (body?.action === "status") {
+      return new Response(JSON.stringify(quotaInfo(effectiveCount)), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (quota.limitReached) {
       return new Response(
-        JSON.stringify({ limitReached: true, tier: profile.tier }),
+        JSON.stringify({ limitReached: true, tier: profile.tier, ...quotaInfo(effectiveCount) }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const { message } = await req.json();
+    const message = typeof body?.message === "string" ? body.message.trim() : "";
+    if (!message || message.length > 4000) {
+      return new Response(JSON.stringify({ error: "Please write a message (up to 4000 characters)." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY)
       throw new Error("ANTHROPIC_API_KEY is not configured");
@@ -172,7 +192,7 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify(parsed), {
+    return new Response(JSON.stringify({ ...parsed, ...quotaInfo(effectiveCount + 1) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

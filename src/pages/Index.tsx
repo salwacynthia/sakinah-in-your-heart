@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Leaf, Heart, Sparkles, RotateCcw, Share2, User as UserIcon } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -31,6 +31,20 @@ const Index = () => {
   const [result, setResult] = useState<GuidanceResult | null>(null);
   const [limitReached, setLimitReached] = useState(false);
   const { history, addEntry, clearHistory } = useReflectionHistory();
+  const [quota, setQuota] = useState<{ remaining: number | null; limit: number; unlimited: boolean } | null>(null);
+
+  const applyQuota = (d: any) => {
+    if (d && typeof d.limit === "number") {
+      setQuota({ remaining: d.remaining ?? null, limit: d.limit, unlimited: !!d.unlimited });
+    }
+  };
+
+  useEffect(() => {
+    supabase.functions
+      .invoke("sakinah-guidance", { body: { action: "status" } })
+      .then(({ data }) => applyQuota(data))
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async () => {
     if (!query.trim()) return;
@@ -49,6 +63,7 @@ const Index = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      applyQuota(data);
       if (data?.limitReached) {
         setLimitReached(true);
         setLoading(false);
@@ -168,6 +183,11 @@ const Index = () => {
                   <Sparkles size={16} />
                   Find Peace
                 </motion.button>
+                {quota && !quota.unlimited && quota.remaining !== null && (
+                  <p className="mt-4 text-xs text-muted-foreground tracking-wide">
+                    {quota.remaining} of {quota.limit} reflections remaining today
+                  </p>
+                )}
               </motion.div>
             )}
 

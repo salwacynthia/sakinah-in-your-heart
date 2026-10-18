@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { generateMessage } from "npm:@lovable.dev/ai-gateway";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -95,30 +96,18 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY)
-      throw new Error("ANTHROPIC_API_KEY is not configured");
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-5",
+    let content: string | undefined;
+    try {
+      const data: any = await generateMessage({
+        model: "anthropic/claude-sonnet-5",
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: message }],
-      }),
-    });
-
-    if (!response.ok) {
-      const status = response.status;
-      const text = await response.text();
-      console.error("Anthropic API error:", status, text);
-
+      });
+      content = data?.content?.find((b: any) => b?.type === "text")?.text;
+    } catch (e: any) {
+      const status = e?.httpStatus;
+      console.error("AI gateway error:", e?.code ?? "", e?.message ?? e);
       if (status === 429) {
         return new Response(
           JSON.stringify({
@@ -142,7 +131,6 @@ serve(async (req) => {
           },
         );
       }
-
       return new Response(
         JSON.stringify({ error: "Failed to get AI response" }),
         {
@@ -151,9 +139,6 @@ serve(async (req) => {
         },
       );
     }
-
-    const data = await response.json();
-    const content = data.content?.[0]?.text;
 
     let parsed;
     try {

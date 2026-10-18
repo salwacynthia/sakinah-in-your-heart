@@ -78,9 +78,13 @@ const Index = () => {
         ayatReference: guidanceResult.ayatReference,
         bengaliTranslation: guidanceResult.bengaliTranslation,
         reflection: guidanceResult.reflection,
+        hadith: guidanceResult.hadith || "",
         hadithBengali: guidanceResult.hadithBengali,
         hadithNarrator: guidanceResult.hadithNarrator,
         hadithSource: guidanceResult.hadithSource,
+        asmaulHusnaArabic: guidanceResult.asmaulHusnaArabic || "",
+        asmaulHusnaBengali: guidanceResult.asmaulHusnaBengali || "",
+        asmaulHusnaExplanation: guidanceResult.asmaulHusnaExplanation || "",
       });
     } catch (e: any) {
       console.error("Guidance error:", e);
@@ -103,7 +107,7 @@ const Index = () => {
       ayatReference: entry.ayatReference,
       bengaliTranslation: entry.bengaliTranslation,
       reflection: entry.reflection,
-      hadith: "",
+      hadith: entry.hadith || "",
       hadithBengali: entry.hadithBengali,
       hadithNarrator: entry.hadithNarrator,
       hadithSource: entry.hadithSource,

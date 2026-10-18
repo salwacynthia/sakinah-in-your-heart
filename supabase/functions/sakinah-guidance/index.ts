@@ -104,7 +104,7 @@ serve(async (req) => {
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: message }],
       });
-      content = data?.content?.[0]?.text;
+      content = data?.content?.find((b: any) => b?.type === "text")?.text;
     } catch (e: any) {
       const status = e?.httpStatus;
       console.error("AI gateway error:", e?.code ?? "", e?.message ?? e);

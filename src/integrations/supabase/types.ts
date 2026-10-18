@@ -38,6 +38,71 @@ export type Database = {
         }
         Relationships: []
       }
+      reflections: {
+        Row: {
+          asmaul_husna_arabic: string
+          asmaul_husna_explanation: string
+          asmaul_husna_meaning: string
+          ayat: string
+          ayat_reference: string
+          created_at: string
+          hadith: string
+          hadith_narrator: string
+          hadith_source: string
+          hadith_translation: string
+          id: string
+          is_shared_with_family: boolean
+          query: string
+          reflection: string
+          translation: string
+          user_id: string
+        }
+        Insert: {
+          asmaul_husna_arabic?: string
+          asmaul_husna_explanation?: string
+          asmaul_husna_meaning?: string
+          ayat?: string
+          ayat_reference?: string
+          created_at?: string
+          hadith?: string
+          hadith_narrator?: string
+          hadith_source?: string
+          hadith_translation?: string
+          id?: string
+          is_shared_with_family?: boolean
+          query: string
+          reflection?: string
+          translation?: string
+          user_id: string
+        }
+        Update: {
+          asmaul_husna_arabic?: string
+          asmaul_husna_explanation?: string
+          asmaul_husna_meaning?: string
+          ayat?: string
+          ayat_reference?: string
+          created_at?: string
+          hadith?: string
+          hadith_narrator?: string
+          hadith_source?: string
+          hadith_translation?: string
+          id?: string
+          is_shared_with_family?: boolean
+          query?: string
+          reflection?: string
+          translation?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

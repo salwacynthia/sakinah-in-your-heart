@@ -20,10 +20,11 @@ A running list of what's done and what's next. Updated as we build.
 - [x] Sign-in screens + 3 free reflections daily limit + paywall ($1.99 / $7.99)
 - [x] Task 1: AI engine verified + "X of 3 reflections remaining today" counter (server-side, resets at UTC midnight)
 - [x] Android & iOS app setup (Capacitor)
+- [x] Task 2: reflections saved to the cloud diary (private by default, old browser entries auto-imported on sign-in)
 
 ## 🔲 Next (waiting on you)
 
-- [ ] Task 2: save reflections to the cloud diary
+
 - [ ] Task 3: Sakinah+ payments (€4.99/year)
 - [ ] Task 4–5: Family circle, email invites, shared diary
 - [ ] Publish the app (when you're happy with it)

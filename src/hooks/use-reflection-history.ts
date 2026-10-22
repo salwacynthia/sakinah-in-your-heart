@@ -15,6 +15,8 @@ export interface HistoryEntry {
   asmaulHusnaArabic: string;
   asmaulHusnaBengali: string;
   asmaulHusnaExplanation: string;
+  isShared: boolean;
+  authorId?: string;
   timestamp: number;
 }
 
@@ -41,6 +43,27 @@ function readLocalEntries(): LocalEntry[] {
   } catch {
     return [];
   }
+}
+
+export function mapReflection(r: any): HistoryEntry {
+  return {
+    id: r.id,
+    query: r.query,
+    ayat: r.ayat,
+    ayatReference: r.ayat_reference,
+    bengaliTranslation: r.translation,
+    reflection: r.reflection,
+    hadith: r.hadith,
+    hadithBengali: r.hadith_translation,
+    hadithNarrator: r.hadith_narrator,
+    hadithSource: r.hadith_source,
+    asmaulHusnaArabic: r.asmaul_husna_arabic,
+    asmaulHusnaBengali: r.asmaul_husna_meaning,
+    asmaulHusnaExplanation: r.asmaul_husna_explanation,
+    isShared: !!r.is_shared_with_family,
+    authorId: r.user_id,
+    timestamp: new Date(r.created_at).getTime(),
+  };
 }
 
 export function useReflectionHistory() {
@@ -88,24 +111,7 @@ export function useReflectionHistory() {
         .limit(200);
 
       if (!cancelled && data) {
-        setHistory(
-          data.map((r) => ({
-            id: r.id,
-            query: r.query,
-            ayat: r.ayat,
-            ayatReference: r.ayat_reference,
-            bengaliTranslation: r.translation,
-            reflection: r.reflection,
-            hadith: r.hadith,
-            hadithBengali: r.hadith_translation,
-            hadithNarrator: r.hadith_narrator,
-            hadithSource: r.hadith_source,
-            asmaulHusnaArabic: r.asmaul_husna_arabic,
-            asmaulHusnaBengali: r.asmaul_husna_meaning,
-            asmaulHusnaExplanation: r.asmaul_husna_explanation,
-            timestamp: new Date(r.created_at).getTime(),
-          })),
-        );
+        setHistory(data.map(mapReflection));
       }
       if (!cancelled) setLoading(false);
     };
@@ -117,9 +123,11 @@ export function useReflectionHistory() {
   }, []);
 
   const addEntry = useCallback(
-    async (entry: Omit<HistoryEntry, "id" | "timestamp">) => {
+    async (
+      entry: Omit<HistoryEntry, "id" | "timestamp" | "isShared" | "authorId">,
+    ): Promise<string | null> => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) return null;
 
       const { data, error } = await supabase
         .from("reflections")
@@ -143,13 +151,31 @@ export function useReflectionHistory() {
 
       if (!error && data) {
         setHistory((prev) => [
-          { ...entry, id: data.id, timestamp: new Date(data.created_at).getTime() },
+          {
+            ...entry,
+            id: data.id,
+            isShared: false,
+            authorId: user.id,
+            timestamp: new Date(data.created_at).getTime(),
+          },
           ...prev,
         ]);
+        return data.id;
       }
+      return null;
     },
     [],
   );
+
+  const toggleShare = useCallback(async (id: string, shared: boolean): Promise<boolean> => {
+    const { error } = await supabase
+      .from("reflections")
+      .update({ is_shared_with_family: shared })
+      .eq("id", id);
+    if (error) return false;
+    setHistory((prev) => prev.map((e) => (e.id === id ? { ...e, isShared: shared } : e)));
+    return true;
+  }, []);
 
   const clearHistory = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -158,5 +184,5 @@ export function useReflectionHistory() {
     if (!error) setHistory([]);
   }, []);
 
-  return { history, loading, addEntry, clearHistory };
+  return { history, loading, addEntry, toggleShare, clearHistory };
 }

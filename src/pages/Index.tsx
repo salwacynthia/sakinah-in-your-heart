@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Heart, Sparkles, RotateCcw, Share2, User as UserIcon } from "lucide-react";
+import { Leaf, Heart, Sparkles, RotateCcw, Share2, User as UserIcon, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useReflectionHistory } from "@/hooks/use-reflection-history";
+import { useFamily, useFamilyDiary } from "@/hooks/use-family";
+import { useAuth } from "@/hooks/use-auth";
 import ResultCard from "@/components/ResultCard";
 import HadithCard from "@/components/HadithCard";
 import LoadingAnimation from "@/components/LoadingAnimation";
@@ -30,8 +32,22 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GuidanceResult | null>(null);
   const [limitReached, setLimitReached] = useState(false);
-  const { history, addEntry, clearHistory } = useReflectionHistory();
+  const { user } = useAuth();
+  const { history, addEntry, toggleShare, clearHistory } = useReflectionHistory();
+  const { status: familyStatus } = useFamily();
+  const { entries: familyEntries, refresh: refreshFamilyEntries } = useFamilyDiary();
   const [quota, setQuota] = useState<{ remaining: number | null; limit: number; unlimited: boolean } | null>(null);
+  const [entryId, setEntryId] = useState<string | null>(null);
+  const [entryShared, setEntryShared] = useState(false);
+  const [entryIsMine, setEntryIsMine] = useState(true);
+  const [sharing, setSharing] = useState(false);
+
+  const memberNames: Record<string, string> = {};
+  if (familyStatus?.family) {
+    for (const m of familyStatus.members) {
+      memberNames[m.user_id] = m.user_id === user?.id ? "You" : m.email || "Family";
+    }
+  }
 
   const applyQuota = (d: any) => {
     if (d && typeof d.limit === "number") {
@@ -72,7 +88,7 @@ const Index = () => {
 
       const guidanceResult = data as GuidanceResult;
       setResult(guidanceResult);
-      addEntry({
+      const newId = await addEntry({
         query,
         ayat: guidanceResult.ayat,
         ayatReference: guidanceResult.ayatReference,
@@ -86,6 +102,11 @@ const Index = () => {
         asmaulHusnaBengali: guidanceResult.asmaulHusnaBengali || "",
         asmaulHusnaExplanation: guidanceResult.asmaulHusnaExplanation || "",
       });
+      if (newId) {
+        setEntryId(newId);
+        setEntryShared(false);
+        setEntryIsMine(true);
+      }
     } catch (e: any) {
       console.error("Guidance error:", e);
       toast({
@@ -114,12 +135,34 @@ const Index = () => {
     });
     setQuery(entry.query);
     setLimitReached(false);
+    setEntryId(entry.id);
+    setEntryShared(entry.isShared);
+    setEntryIsMine(!entry.authorId || entry.authorId === user?.id);
+  };
+
+  const handleToggleShare = async (id?: string, current?: boolean) => {
+    const targetId = id ?? entryId;
+    const targetShared = current ?? entryShared;
+    if (!targetId) return;
+    setSharing(true);
+    const ok = await toggleShare(targetId, !targetShared);
+    setSharing(false);
+    if (ok) {
+      if (targetId === entryId) setEntryShared(!targetShared);
+      refreshFamilyEntries();
+      toast({ title: !targetShared ? "Shared with your family circle" : "Kept private again" });
+    } else {
+      toast({ title: "Couldn't update sharing", variant: "destructive" });
+    }
   };
 
   const handleReset = () => {
     setResult(null);
     setQuery("");
     setLimitReached(false);
+    setEntryId(null);
+    setEntryShared(false);
+    setEntryIsMine(true);
   };
 
   return (
@@ -139,6 +182,9 @@ const Index = () => {
         <div className="flex items-center gap-1">
           <HistoryDrawer
             history={history}
+            familyEntries={familyEntries}
+            memberNames={memberNames}
+            onToggleShare={(entry) => handleToggleShare(entry.id, entry.isShared)}
             onSelect={handleHistorySelect}
             onClear={clearHistory}
           />
@@ -252,6 +298,21 @@ const Index = () => {
                     <RotateCcw size={12} />
                     Ask again
                   </button>
+                  {familyStatus?.family && entryIsMine && (
+                    <>
+                      <span className="text-border">·</span>
+                      <button
+                        onClick={() => handleToggleShare()}
+                        disabled={sharing}
+                        className={`text-xs transition-colors flex items-center gap-1.5 disabled:opacity-50 ${
+                          entryShared ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Users size={12} />
+                        {entryShared ? "Shared with family" : "Share with family"}
+                      </button>
+                    </>
+                  )}
                   <span className="text-border">·</span>
                   <button
                     onClick={async () => {

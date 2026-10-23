@@ -5,6 +5,7 @@ import { ArrowLeft, Lock, Mail, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "@/hooks/use-toast";
+import FamilySection from "@/components/FamilySection";
 
 const inputCls =
   "w-full bg-card border border-border rounded-lg py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30";
@@ -77,6 +78,8 @@ const Account = () => {
             <p className="text-sm text-foreground">{user?.email}</p>
           </div>
         </section>
+
+        <FamilySection />
 
         <section className="bg-card border border-border rounded-xl p-5 space-y-3">
           <h2 className="text-sm font-medium text-foreground">Change password</h2>

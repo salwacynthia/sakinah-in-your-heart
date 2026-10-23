@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
+import Invite from "./pages/Invite";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/invite/:token" element={<Invite />} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route
               path="/"

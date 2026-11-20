@@ -1,8 +1,10 @@
 # 🌿 Sakinah — Return to Allah in every moment
 
-**Sakinah** (سكينة, "tranquility") is a full-stack web and mobile app for reconnecting with Allah at *any* point in life: when you're grateful, joyful, anxious, lost, grieving, or simply reflecting. You write what's on your heart, in English or Bengali, and Sakinah answers with a relevant Quranic verse, a prophetic hadith, a "Healing Name of Allah", and a short, friendly reflection that ties them to what you shared.
+**What it is:** a full-stack, AI-powered web and mobile app where a large language model (Claude) helps to connect to Quran with reflections and quranic ayats. 
 
-Whether the message is *"Career stress is overwhelming me"* or *"I want to thank Allah for everything"*, the goal is the same: turn the moment, happy or sad, into a connection with the Quran and Sunnah.
+**How it works:** a React + TypeScript client calls Deno edge functions on Supabase. They authenticate the user, enforce a per-tier daily quota, and prompt the model through a server-side AI gateway to return strictly structured JSON in the user’s language. Data is stored in Postgres with Row Level Security (private journal plus the opt-in Family Circle), and the same codebase ships to Android and iOS with Capacitor.
+
+At *any* point in life: when you're grateful, joyful, anxious, lost, grieving, or simply reflecting. You write what's on your heart, in English or Bengali, and Sakinah answers with a relevant Quranic verse, a prophetic hadith, a "Healing Name of Allah", and a short, friendly reflection that ties them to what you shared. Whether the message is *"Career stress is overwhelming me"* or *"I want to thank Allah for everything"*, the goal is the same: turn the moment, happy or sad, into a connection with the Quran and Sunnah.
 
 **🔗 Live demo:** [sakinah-in-your-heart.vercel.app](https://sakinah-in-your-heart.vercel.app)
 

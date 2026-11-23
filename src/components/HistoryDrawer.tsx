@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "react-router-dom";
 import { Clock, Lock, Trash2, Users } from "lucide-react";
 import { HistoryEntry } from "@/hooks/use-reflection-history";
 
 interface HistoryDrawerProps {
   history: HistoryEntry[];
   familyEntries: HistoryEntry[];
-  memberNames: Record<string, string>;
+  inCircle: boolean;
+  onOpen: () => void;
   onToggleShare: (entry: HistoryEntry) => void;
   onSelect: (entry: HistoryEntry) => void;
   onClear: () => void;
@@ -16,7 +18,8 @@ interface HistoryDrawerProps {
 const HistoryDrawer = ({
   history,
   familyEntries,
-  memberNames,
+  inCircle,
+  onOpen,
   onToggleShare,
   onSelect,
   onClear,
@@ -43,7 +46,7 @@ const HistoryDrawer = ({
         <p className="text-xs text-muted-foreground mb-1">
           {formatDate(entry.timestamp)}
           {tab === "family" && (
-            <span className="text-primary/70"> · {memberNames[entry.authorId ?? ""] ?? "Family"}</span>
+            <span className="text-primary/70"> · {entry.authorName ?? "Family"}</span>
           )}
         </p>
         <p className="text-sm text-foreground font-medium line-clamp-1 mb-1">{entry.query}</p>
@@ -51,7 +54,7 @@ const HistoryDrawer = ({
           {entry.ayatReference} — {entry.reflection.slice(0, 80)}…
         </p>
       </button>
-      {showToggle && (
+      {showToggle && inCircle && (
         <button
           onClick={() => onToggleShare(entry)}
           title={
@@ -70,7 +73,7 @@ const HistoryDrawer = ({
   );
 
   return (
-    <Sheet>
+    <Sheet onOpenChange={(o) => o && onOpen()}>
       <SheetTrigger asChild>
         <button className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 text-xs">
           <Clock size={14} />
@@ -119,10 +122,19 @@ const HistoryDrawer = ({
             ) : (
               <>
                 <Users size={20} className="mb-2 text-primary/60" />
-                <p>Nothing shared yet.</p>
-                <p className="text-xs mt-1">
-                  Reflections shared with your family circle appear here. Tap the lock icon on any entry to share it.
-                </p>
+                {inCircle ? (
+                  <>
+                    <p>Nothing shared yet.</p>
+                    <p className="text-xs mt-1">
+                      Reflections shared with your family circle appear here. Tap the lock icon on any entry to share it.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>You're not in a family circle yet.</p>
+                    <Link to="/circle" className="text-xs mt-2 text-primary">Create or join one</Link>
+                  </>
+                )}
               </>
             )}
           </div>

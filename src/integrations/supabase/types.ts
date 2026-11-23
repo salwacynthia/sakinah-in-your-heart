@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      circle_members: {
+        Row: {
+          circle_id: string
+          id: string
+          is_owner: boolean
+          joined_at: string
+          member_key: string
+          name: string
+        }
+        Insert: {
+          circle_id: string
+          id?: string
+          is_owner?: boolean
+          joined_at?: string
+          member_key: string
+          name: string
+        }
+        Update: {
+          circle_id?: string
+          id?: string
+          is_owner?: boolean
+          joined_at?: string
+          member_key?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_members_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      circle_reflections: {
+        Row: {
+          circle_id: string
+          created_at: string
+          data: Json
+          id: string
+          local_id: string
+          member_id: string
+        }
+        Insert: {
+          circle_id: string
+          created_at?: string
+          data: Json
+          id?: string
+          local_id: string
+          member_id: string
+        }
+        Update: {
+          circle_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          local_id?: string
+          member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_reflections_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_reflections_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "circle_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      circles: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       families: {
         Row: {
           created_at: string

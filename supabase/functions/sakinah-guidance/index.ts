@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { generateMessage } from "npm:@lovable.dev/ai-gateway";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,7 +31,6 @@ Rules:
 - LANGUAGE RULE: Detect the language of the user's message. If they write in English, write all non-Arabic fields (asmaulHusnaBengali, asmaulHusnaExplanation, ayatReference, bengaliTranslation, reflection, hadithBengali, hadithNarrator, hadithSource) in English. If they write in Bengali/Bangla, use Bengali. The "ayat" and "hadith" fields should always remain in Arabic. The "asmaulHusnaArabic" field should always be in Arabic.
 - Respond ONLY with valid JSON. No extra text.`;
 
-import { computeQuota } from "./quota.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -40,54 +38,7 @@ serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization header");
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
-    if (userError || !user) throw new Error("Not authenticated");
-
-    const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles")
-      .select("tier, reflection_count, last_reset_date")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError) throw new Error("Could not load profile");
-
-    // Reset the count if it's a new day (UTC)
-    const quota = computeQuota(profile);
-    const { todayStr, used: effectiveCount } = quota;
-    const quotaInfo = (usedNow: number) => {
-      const q = computeQuota(
-        { ...profile, reflection_count: usedNow, last_reset_date: todayStr },
-      );
-      return { remaining: q.remaining, limit: q.limit, unlimited: q.unlimited };
-    };
-
     const body = await req.json().catch(() => ({}));
-
-    // Status-only request: report today's remaining count, no AI call
-    if (body?.action === "status") {
-      return new Response(JSON.stringify(quotaInfo(effectiveCount)), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (quota.limitReached) {
-      return new Response(
-        JSON.stringify({ limitReached: true, tier: profile.tier, ...quotaInfo(effectiveCount) }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
 
     const message = typeof body?.message === "string" ? body.message.trim() : "";
     if (!message || message.length > 4000) {
@@ -142,7 +93,7 @@ serve(async (req) => {
 
     let parsed;
     try {
-      const cleaned = content
+      const cleaned = (content ?? "")
         .replace(/```json\n?/g, "")
         .replace(/```\n?/g, "")
         .trim();
@@ -158,26 +109,7 @@ serve(async (req) => {
       );
     }
 
-    // Increment usage count, resetting first if it's a new day
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!serviceRoleKey) {
-      console.error("SUPABASE_SERVICE_ROLE_KEY is not configured");
-    } else {
-      const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-      const { error: updateError } = await supabaseAdmin
-        .from("profiles")
-        .update({
-          reflection_count: effectiveCount + 1,
-          last_reset_date: todayStr,
-        })
-        .eq("id", user.id);
-
-      if (updateError) {
-        console.error("Failed to update reflection_count:", updateError);
-      }
-    }
-
-    return new Response(JSON.stringify({ ...parsed, ...quotaInfo(effectiveCount + 1) }), {
+    return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

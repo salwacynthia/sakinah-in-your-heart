@@ -2,3 +2,6 @@ project_id = "petyarrzddqeyrxbowkq"
 
 [functions.sakinah-guidance]
 verify_jwt = false
+
+[functions.circle]
+verify_jwt = false

@@ -15,6 +15,13 @@
       "when": 1792706820294,
       "tag": "0001_create_family_sharing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795429865367,
+      "tag": "0002_zero_login_circles",
+      "breakpoints": true
     }
   ]
 }

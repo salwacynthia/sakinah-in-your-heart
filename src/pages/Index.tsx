@@ -275,7 +275,7 @@ const Index = () => {
                         `📖 ${result.ayatReference}`,
                         `"${result.ayat}"`,
                         "",
-                        `🇧🇩 ${result.bengaliTranslation}`,
+                        `↳ ${result.bengaliTranslation}`,
                         "",
                         `✦ ${result.reflection}`,
                       ];

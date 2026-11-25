@@ -101,7 +101,7 @@ const ResultCard = ({
       {/* Divider */}
       <div className="w-12 h-px bg-border mx-auto my-6" />
 
-      {/* Bengali Translation */}
+      {/* Translation */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -110,7 +110,7 @@ const ResultCard = ({
       >
         <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
           <BookOpen size={12} />
-          Bengali Translation
+          {/[\u0980-\u09FF]/.test(bengaliTranslation) ? "Bengali Translation" : "Translation"}
         </h3>
         <p className="text-foreground text-sm leading-relaxed">
           {bengaliTranslation}
